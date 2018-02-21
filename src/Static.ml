@@ -1,5 +1,3 @@
-open BlockLibrary
-
 let block: ('a, 'a, unit, unit, 'a, 'a) Block2.t = 
     let initialize (init: 'a) = 
         { Result2.newState = init; events = [] } in

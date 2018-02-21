@@ -1,3 +1,5 @@
 module LeftRight = struct
-  type ('a,'b) t = | Left of 'a | Right of 'b
+  type ('a, 'b) t = 
+  | Left of 'a
+  | Right of 'b
 end

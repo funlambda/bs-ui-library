@@ -5,7 +5,7 @@ var List = require("bs-platform/lib/js/list.js");
 var $$Array = require("bs-platform/lib/js/array.js");
 var Block = require("bs-platform/lib/js/block.js");
 var Curry = require("bs-platform/lib/js/curry.js");
-var BlockLibrary$UiLibrary = require("./BlockLibrary.bs.js");
+var Result2$UiLibrary = require("./Result2.bs.js");
 
 function getBlockInfo(block, result) {
   return /* record */[
@@ -21,7 +21,7 @@ function applyReaction(reaction, block, result) {
         return Curry._1(block[/* initialize */0], reaction[0]);
     case 1 : 
         var s = reaction[0];
-        return BlockLibrary$UiLibrary.Result2[/* mapState */1]((function () {
+        return Result2$UiLibrary.mapState((function () {
                       return s;
                     }), result);
     case 2 : 

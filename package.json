@@ -1,5 +1,5 @@
 {
-  "name": "my-first-app",
+  "name": "bs-ui-library",
   "version": "0.1.0",
   "scripts": {
     "build": "bsb -make-world",
@@ -9,7 +9,7 @@
   "keywords": [
     "BuckleScript"
   ],
-  "author": "",
+  "author": "funlambda",
   "license": "MIT",
   "devDependencies": {
     "bs-platform": "^2.2.0"
