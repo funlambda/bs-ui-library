@@ -10,15 +10,15 @@ type action =
     | MoveSlider of float
     | StopSliding
 
-type model = {
+(* type model = {
     isSliding: bool;
     position: float;
     onStart: unit -> unit;
     onMove: float -> unit;
     onStop: unit -> unit;
-}
+} *)
 
-let block: (float, state, action, unit, model, float) Block2.t =
+let block: (float, state, action, unit, _, float) Block2.t =
     let initialize position =
         { newState = { isSliding = false; position = position }; events = [] } in
 
@@ -32,13 +32,14 @@ let block: (float, state, action, unit, model, float) Block2.t =
             { newState = { isSliding = false; position = state.position }; events = [] } in
 
     let viewModel (state: state) dispatch =
-        {
+        [%bs.obj {
+            __tag = "Slider";
             isSliding = state.isSliding;
             position = state.position;
             onStart = (fun () -> dispatch StartSliding);
             onMove = (fun p -> dispatch (MoveSlider p));
             onStop = (fun () -> dispatch StopSliding);
-        } in
+        }] in
 
     let getValue (state: state) =
         state.position in

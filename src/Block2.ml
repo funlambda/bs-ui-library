@@ -15,12 +15,10 @@ let mapInit (f: ('init1 -> 'init2)) (block: ('init2,_,_,_,_,_) t) =
 
 let mapValue (f: ('value1 -> 'value2)) (block: (_,'state,_,_,_,'value1) t) =
   let getValue (s: 'state) = block.getValue s |> f in
-  (* let getValue = block.getValue @@ f; *)
   { initialize = block.initialize; handle = block.handle; viewModel = block.viewModel; getValue =  getValue }
 
 let mapModel (f: ('model1 -> 'model2)) (block: (_,'state,_,_,'model1,_) t) =
-  let viewModel (s: 'model1) dispatch = block.viewModel s dispatch |> f in
-  (* let getValue = block.getValue @@ f; *)
+  let viewModel (s: 'state) dispatch = block.viewModel s dispatch |> f in
   { initialize = block.initialize; handle = block.handle; viewModel = viewModel; getValue =  block.getValue }
 
 let combine (b1: ('init1,'state1,'action1,'event1,'model1,'value1) t)

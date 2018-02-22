@@ -17,6 +17,7 @@ let handle (state: state) (action: action) =
 
 let viewModel (state: state) (dispatch: action -> unit) =
   [%bs.obj {
+      __tag = "Button";
       isHovered = state.isHovered;
       onClick = (fun () -> dispatch OnClick);
       onMouseEnter = (fun () -> dispatch OnMouseEnter);

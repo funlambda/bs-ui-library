@@ -1,6 +1,6 @@
 open Block2
 
-type model = {
+(* type model = {
     value: string;
     isHovered: bool;
     isFocused: bool;
@@ -10,7 +10,7 @@ type model = {
     onMouseEnter: unit -> unit;
     onMouseLeave: unit -> unit
 }
-
+ *)
 type state = {
     value: string;
     isHovered: bool;
@@ -24,7 +24,7 @@ type action =
     | MouseEnter
     | MouseLeave
 
-let block: (string, state, action, unit, model, string) Block2.t =
+let block: (string, state, action, unit, _, string) Block2.t =
     let initialize (init: string) =
         Result2.mk ({ value = init; isHovered = false; isFocused = false }) in
 
@@ -37,7 +37,8 @@ let block: (string, state, action, unit, model, string) Block2.t =
         | MouseLeave -> Result2.mk { state with isHovered = false } in
 
     let viewModel (state: state) (dispatch: action -> unit) =
-        {
+        [%bs.obj {
+            __tag = "Textbox";
             value = state.value;
             isHovered = state.isHovered;
             isFocused = state.isFocused;
@@ -46,7 +47,7 @@ let block: (string, state, action, unit, model, string) Block2.t =
             onBlur = (fun () -> dispatch Blur);
             onMouseEnter = (fun () -> dispatch MouseEnter);
             onMouseLeave = (fun () -> dispatch MouseLeave)
-        } in
+        }] in
 
     let getValue (state: state) =
         state.value in
