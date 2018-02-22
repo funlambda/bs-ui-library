@@ -17,4 +17,5 @@ let run (block: (unit,'state,'action,'event,'model,unit) Block2.t) (onModelChang
   let dispatch = start initialResult.newState in
   let initialModel = block.viewModel initialState dispatch in
 
-  initialModel
+  onModelChanged initialModel;
+  ()
