@@ -16,6 +16,13 @@ let mapEvent (f: ('event1 -> 'event2)) (r: ('state1, 'action1, 'event1) t) =
   { newState = r.newState;
     events = r.events |> List.map f }
 
+let chooseEvent (f: ('event1 -> 'event2 option)) (r: ('state1, 'action1, 'event1) t) =
+  { newState = r.newState;
+    events = r.events 
+             |> List.map f
+             |> List.filter (function | None -> false | Some _ -> true)
+             |> List.map (function | Some x -> x | None -> failwith "oops") }
+
 let mapAction (f: ('action1 -> 'action2)) (r: ('state1, 'action1, 'event1) t): ('state1, 'action2, 'event1) t =
   { newState = r.newState;
     events = r.events }

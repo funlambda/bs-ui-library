@@ -11,6 +11,7 @@ open Block2
     onMouseLeave: unit -> unit
 }
  *)
+
 type state = {
     value: string;
     isHovered: bool;

@@ -28,5 +28,3 @@ let getValue (_state: state) = ()
 
 let block =
   { initialize = initialize; handle = handle; viewModel = viewModel; getValue = getValue }
-
-(* dsfd *)

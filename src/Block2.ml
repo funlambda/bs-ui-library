@@ -1,5 +1,4 @@
 open Util
-open Result2
 
 type ('init, 'state, 'action, 'event, 'model, 'value) t = {
     initialize: 'init -> ('state, 'action, 'event) Result2.t;
@@ -20,6 +19,12 @@ let mapValue (f: ('value1 -> 'value2)) (block: (_,'state,_,_,_,'value1) t) =
 let mapModel (f: ('model1 -> 'model2)) (block: (_,'state,_,_,'model1,_) t) =
   let viewModel (s: 'state) dispatch = block.viewModel s dispatch |> f in
   { initialize = block.initialize; handle = block.handle; viewModel = viewModel; getValue =  block.getValue }
+
+let chooseEvent (f: 'Event1 -> 'Event2 option) (block: ('init, 'state, 'action, 'event1, 'model, 'value) t): ('init, 'state, 'action, 'event2, 'model, 'value) t =
+    { initialize = (fun x -> Result2.chooseEvent f (block.initialize x));
+      handle = (fun state (action: 'Action) -> block.handle state action |> Result2.chooseEvent f);
+      viewModel = block.viewModel;
+      getValue = block.getValue }
 
 let combine (b1: ('init1,'state1,'action1,'event1,'model1,'value1) t)
             (b2: ('init2,'state2,'action2,'event2,'model2,'value2) t) =
@@ -102,3 +107,9 @@ let either (b1: ('init1,'state1,'action1,'event1,'model1,'value1) t)
       b2.getValue s |> (fun x -> LeftRight.Right(x)) in
 
   { initialize = initialize; handle = handle; viewModel = viewModel; getValue = getValue }
+
+let static: ('a, 'a, unit, unit, 'a, 'a) t = 
+  { initialize = (fun x -> Result2.mk x)
+  ; handle = (fun s _ -> Result2.mk s)
+  ; viewModel = (fun s _ -> s)
+  ; getValue = (fun x -> x) }
