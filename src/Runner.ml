@@ -1,4 +1,6 @@
-let run (block: (unit,'state,'action,'event,'model,unit) Block2.t) (onModelChanged: 'model -> unit) =
+(** Runner *)
+
+let run (block: (unit,'state,'action,'event,'model,unit) Block.t) (onModelChanged: 'model -> unit) =
   let start (initialState: 'state) =
     let state = ref initialState in
 

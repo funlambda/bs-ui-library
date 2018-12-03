@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "scripts": {
     "build": "bsb -make-world",
-    "start": "bsb -make-world -w",
+    "watch": "bsb -make-world -w",
     "clean": "bsb -clean-world"
   },
   "keywords": [
@@ -11,7 +11,12 @@
   ],
   "author": "funlambda",
   "license": "MIT",
+  "dependencies": {
+    "react": "^16.6.3",
+    "react-dom": "^16.6.3",
+    "react-scripts": "2.1.1"
+  },
   "devDependencies": {
-    "bs-platform": "^2.2.0"
+    "bs-platform": "^4.0.7"
   }
 }

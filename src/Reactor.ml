@@ -1,6 +1,4 @@
-open Block2
-open Result2
-open Util
+(** Reactor *)
 
 type ('init, 'state, 'action, 'event) t =
     | ReInit of 'init
@@ -16,10 +14,10 @@ type ('state, 'value, 'event) blockInfo = {
     events: 'event list
 }
 
-let getBlockInfo (block: (_,_,_,_,_,_) Block2.t) (result: (_,_,_) Result2.t) =
+let getBlockInfo (block: (_,_,_,_,_,_) Block.t) (result: (_,_,_) ActionResult.t) =
     { state = result.newState; value = block.getValue result.newState; events = result.events }
 
-let applyReaction reaction (block: (_,_,_,_,_,_) Block2.t) result =
+let applyReaction reaction (block: (_,_,_,_,_,_) Block.t) result =
     match reaction with
     | ReInit i -> 
         block.initialize i
@@ -28,7 +26,7 @@ let applyReaction reaction (block: (_,_,_,_,_,_) Block2.t) result =
         (* Result.mkRawWithExtasAndEvents result2.State followUp extras (List.append result.Events result2.Events) *)
     | ReplaceState s -> 
         result 
-        |> Result2.mapState (fun _ -> s) 
+        |> ActionResult.map_state (fun _ -> s) 
     | ApplyAction a -> 
         let result2 = block.handle result.newState a in
         (* let followUp = FollowUp.combine result.FollowUp result2.FollowUp *)
@@ -45,8 +43,8 @@ let applyReaction reaction (block: (_,_,_,_,_,_) Block2.t) result =
 
 let mkBlock
         (getReactions: 'action * ('state, 'value, 'event) blockInfo -> ('init, 'state, 'action, 'event) t array)
-        (block: ('init, 'state, 'action, 'model, 'value, 'event) Block2.t):
-        ('init, 'state, 'action, 'model, 'value, 'event) Block2.t =
+        (block: ('init, 'state, 'action, 'model, 'value, 'event) Block.t):
+        ('init, 'state, 'action, 'model, 'value, 'event) Block.t =
     let handle (state: 'State) (action: 'Action) =
         let rec applyReactions result reactions =
             match reactions with
@@ -62,19 +60,20 @@ let mkBlock
         |> Array.to_list
         |> applyReactions result in
 
-    { Block2.initialize = block.initialize; handle = handle; viewModel = block.viewModel; getValue = block.getValue }
+    { initialize = block.initialize; handle = handle; viewModel = block.viewModel; getValue = block.getValue }
 
 
 let mkBlock2 
-        (getReactions: ('action1, 'action2) LeftRight.t 
+        (getReactions: ('action1, 'action2) Either.t 
                         * ('state1, 'value1, 'event1) blockInfo 
                         * ('state2, 'value2, 'event2) blockInfo 
-                        -> (('init1, 'state1, 'action1, 'event1) t, ('init2, 'state2, 'action2, 'event2) t) LeftRight.t list)
-        ((block1: ('init1, 'state1, 'action1, 'event1, 'model1, 'value1) Block2.t),
-         (block2: ('init2, 'state2, 'action2, 'event2, 'model2, 'value2) Block2.t))
-        : (('init1 * 'init2), ('state1 * 'state2), ('action1, 'action2) LeftRight.t, ('event1, 'event2) LeftRight.t, ('model1 * 'model2), ('value1 * 'value2)) Block2.t =
+                        -> (('init1, 'state1, 'action1, 'event1) t, ('init2, 'state2, 'action2, 'event2) t) Either.t list)
+        ((block1: ('init1, 'state1, 'action1, 'event1, 'model1, 'value1) Block.t),
+         (block2: ('init2, 'state2, 'action2, 'event2, 'model2, 'value2) Block.t))
+        : (('init1 * 'init2), ('state1 * 'state2), ('action1, 'action2) Either.t, ('event1, 'event2) Either.t, ('model1 * 'model2), ('value1 * 'value2)) Block.t =
 
-    let mergeResultsIntoOne (result1, result2) =
+    let mergeResultsIntoOne ((result1: (_,_,_) ActionResult.t), 
+                             (result2: (_,_,_) ActionResult.t)): (_,_,_) ActionResult.t =
         let newState = result1.newState, result2.newState in
         (* let followUp = 
             FollowUp.combine
@@ -85,8 +84,8 @@ let mkBlock2
         let events = 
             List.concat 
                 [
-                    (result1.events |> List.map (fun x -> LeftRight.Left x));
-                    (result2.events |> List.map (fun x -> LeftRight.Right x))
+                    (result1.events |> List.map (fun x -> Either.Left x));
+                    (result2.events |> List.map (fun x -> Either.Right x))
                 ] in
         { newState = newState; events = events } in
 
@@ -95,15 +94,15 @@ let mkBlock2
         let result2 = block2.initialize init2 in
         mergeResultsIntoOne (result1, result2) in
 
-    let handle ((state1: 'state1), (state2: 'state2)) (action: ('action1, 'action2) LeftRight.t) =
+    let handle ((state1: 'state1), (state2: 'state2)) (action: ('action1, 'action2) Either.t) =
         let (result1, result2) =
             match action with
-            | LeftRight.Left a ->
+            | Either.Left a ->
                 let result1 = block1.handle state1 a in
-                let result2 = { newState = state2; events = [] }  in
+                let result2 = { ActionResult.newState = state2; events = [] }  in
                 result1,result2
-            | LeftRight.Right a -> 
-                let result1 = { newState = state1; events = [] }  in
+            | Either.Right a -> 
+                let result1 = { ActionResult.newState = state1; events = [] }  in
                 let result2 = block2.handle state2 a in
                 result1,result2 in
 
@@ -112,8 +111,8 @@ let mkBlock2
             | head::tail ->
                 let newResults = 
                     match head with
-                    | LeftRight.Left r -> result1 |> applyReaction r block1, result2
-                    | LeftRight.Right r -> result1, result2 |> applyReaction r block2 in
+                    | Either.Left r -> result1 |> applyReaction r block1, result2
+                    | Either.Right r -> result1, result2 |> applyReaction r block2 in
                 applyReactions newResults tail
             | [] -> (result1, result2) in
 
@@ -124,12 +123,12 @@ let mkBlock2
         |> applyReactions (result1, result2)
         |> mergeResultsIntoOne in
 
-    let viewModel ((state1: 'state1), (state2: 'state2)) (dispatch: ('action1, 'action2) LeftRight.t -> unit) =
-        let model1 = block1.viewModel state1 (fun x -> dispatch (LeftRight.Left x)) in
-        let model2 = block2.viewModel state2 (fun x -> dispatch (LeftRight.Right x)) in
+    let viewModel ((state1: 'state1), (state2: 'state2)) (dispatch: ('action1, 'action2) Either.t -> unit) =
+        let model1 = block1.viewModel state1 (fun x -> dispatch (Either.Left x)) in
+        let model2 = block2.viewModel state2 (fun x -> dispatch (Either.Right x)) in
         (model1,model2) in
 
     let getValue (state: 'State1 * 'State2) =
         block1.getValue (fst state), block2.getValue (snd state) in
 
-    { Block2.initialize = initialize; handle = handle; viewModel = viewModel; getValue = getValue }
+    { initialize = initialize; handle = handle; viewModel = viewModel; getValue = getValue }

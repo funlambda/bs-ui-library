@@ -1,6 +1,9 @@
+(** Validated *)
+
 type 'a t =
-  | Invalid of string array
   | Valid of 'a
+  | Invalid of string array
+
 let to_bsObj inner (x: 'a t) =
   match x with
   | Invalid arr -> 
